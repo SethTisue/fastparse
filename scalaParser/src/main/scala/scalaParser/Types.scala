@@ -11,7 +11,7 @@ trait Types extends Core{
   val Mod: R0 = R( LocalMod | AccessMod | `override` )
   val LocalMod: R0 = R( `abstract` | `final` | `sealed` | `implicit` | `lazy` )
   val AccessMod: R0 = {
-    val AccessQualifier = R( "[" ~ (`this` | Id) ~ "]" )
+    val AccessQualifier = R( "[" ~! (`this` | Id) ~ "]" )
     R( (`private` | `protected`) ~ AccessQualifier.? )
   }
 
@@ -25,8 +25,8 @@ trait Types extends Core{
   val Type: R0 = {
     val FunctionArgTypes = R("(" ~ ParamType.rep1(",").? ~ ")" )
     val ArrowType = R( FunctionArgTypes ~ `=>` ~ Type )
-    val ExistentialClause = R( `forSome` ~ `{` ~ Dcl.rep1(Semis) ~ `}` )
-    val PostfixType = R( InfixType ~ (`=>` ~ Type | ExistentialClause.?) )
+    val ExistentialClause = R( `forSome` ~! `{` ~ Dcl.rep1(Semis) ~ `}` )
+    val PostfixType = R( InfixType ~ (`=>` ~! Type | ExistentialClause.?) )
     val Unbounded = R( `_` | ArrowType | PostfixType )
     R( Unbounded ~ TypeBounds )
   }
@@ -34,15 +34,15 @@ trait Types extends Core{
   val InfixType = R( CompoundType ~ (NotNewline ~ Id ~ OneNLMax ~ CompoundType).rep )
 
   val CompoundType = {
-    val RefineStat = R( (`type` ~! TypeDef) | Dcl  )
+    val RefineStat = R( `type` ~ TypeDef | Dcl  )
     val Refinement = R( OneNLMax ~ `{` ~ RefineStat.rep(Semis) ~ `}` )
     R( AnnotType.rep1(`with`) ~ Refinement.? | Refinement )
   }
   val AnnotType = R(SimpleType ~ (NotNewline ~ (NotNewline ~ Annot).rep1).? )
 
   val SimpleType: R0 = {
-    val BasicType = R( "(" ~ Types ~ ")"  | StableId ~ "." ~ `type` | StableId )
-    R( BasicType ~ (TypeArgs | `#` ~ Id).rep )
+    val BasicType = R( "(" ~! Types ~ ")" | StableId ~ ("." ~! `type`).? )
+    R( BasicType ~ (TypeArgs | `#` ~! Id).rep )
   }
 
   val TypeArgs = R( "[" ~! Types ~ "]" )
@@ -66,7 +66,7 @@ trait Types extends Core{
     R((Id | `_`) ~ TypeArgList.? ~ TypeBounds ~ CtxBounds)
   }
 
-  val Annot: R0 = R( `@` ~ SimpleType ~  ("(" ~ (Exprs ~ (`:` ~ `_*`).?).? ~ ")").rep)
+  val Annot: R0 = R( `@` ~! SimpleType ~  ("(" ~ (Exprs ~ (`:` ~ `_*`).?).? ~ ")").rep)
 
   val TypeArgList: R0 = {
     val Variant: R0 = R( Annot.rep ~ (WL ~ CharIn("+-")).? ~ TypeArg )

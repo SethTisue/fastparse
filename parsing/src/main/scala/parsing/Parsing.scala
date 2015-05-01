@@ -351,14 +351,14 @@ object Parser{
    * Wraps a parser and succeeds with `Some` if [[p]] succeeds,
    * and succeeds with `None` if [[p]] fails.
    */
-    case class Optional[+T, R](p: Parser[T])
-                              (implicit ev: Implicits.Optioner[T, R]) extends Parser[R]{
+  case class Optional[+T, R](p: Parser[T])
+                            (implicit ev: Implicits.Optioner[T, R]) extends Parser[R]{
 
     def parseRec(cfg: ParseConfig, index: Int) = {
       p.parseRec(cfg, index) match{
-        case Success(t, index, cut) => Success(ev(Some(t)), index, cut)
-        case f: Failure if f.cut => failMore(f, index, cfg.trace)
-        case _ => Success(ev(None), index)
+        case Success(t, index, cut) => Success(ev(Some(t)), index, false)
+        case f: Failure if f.cut => failMore(f, index, cfg.trace).copy(cut = false)
+        case _ => Success(ev(None), index).copy(cut = false)
       }
     }
     override def toString = s"$p.?"
@@ -508,7 +508,7 @@ object Parser{
         }
       }
       rec(index, Pass)
-      if (lastFailure != null && lastFailure.cut) failMore(lastFailure, index, cfg.trace)
+      if (lastFailure != null && lastFailure.cut) failMore(lastFailure, index, cfg.trace).copy(cut = false)
       else if (res.length >= min) Success(ev(res.iterator), finalIndex)
       else fail(cfg.input, index)
     }
@@ -534,8 +534,8 @@ object Parser{
       @tailrec def rec(parserIndex: Int): Result[T] = {
         if (parserIndex >= ps.length) fail(cfg.input, index)
         else ps(parserIndex).parseRec(cfg, index) match {
-          case s: Success[_] => s
-          case f: Failure if f.cut => failMore(f, index, cfg.trace)
+          case s: Success[_] => s.copy(cut = false)
+          case f: Failure if f.cut => failMore(f, index, cfg.trace).copy(cut = false)
           case _ => rec(parserIndex + 1)
         }
       }
