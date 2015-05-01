@@ -12,14 +12,14 @@ trait Exprs extends Core with Types with Xml{
   val Import: R0 = {
     val Selector: R0 = R( Id ~ (`=>` ~ (Id | `_`)).? )
     val Selectors: R0 = R( "{" ~ (Selector ~ ",").rep ~ (Selector | `_`) ~ "}" )
-    val ImportExpr: R0 = R( StableId ~ ("." ~ (`_` | Selectors)).? )
+    val ImportExpr: R0 = R( StableId ~ ("." ~! (`_` | Selectors)).? )
     R( `import` ~! ImportExpr.rep1(",") )
   }
 
   val Ascription = R( `:` ~ (`_*` |  Type | Annot.rep1) )
 
   val LambdaHead: R0 = {
-    val Binding = R( (Id | `_`) ~ (`:` ~ Type).? )
+    val Binding = R( (Id | `_`) ~! (`:` ~ Type).? )
     val Bindings = R( "(" ~ Binding.rep(",") ~ ")" )
     val Implicit = R( `implicit`.? ~ Id ~ (`:` ~ InfixType).? )
     R( (Bindings | Implicit | `_` ~ Ascription.?) ~ `=>` )

@@ -14,10 +14,10 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
   val TmplBody: R0 = {
     val Prelude = R( (Annot ~ OneNLMax).rep ~ Mod.rep )
     val DefDcl = R(
-      `def` ~ (DefDef | FunDcl) |
-      `type` ~ (TypeDef | TypeDcl) |
-      `val` ~ (ValDef | ValDcl) |
-      `var` ~ (VarDef | VarDcl) |
+      `def` ~! FunSig ~ (FunDef | FunDcl) |
+      `type` ~! (TypeDef | TypeDcl) |
+      `val` ~! (ValDef | ValVarDcl) |
+      `var` ~! (VarDef | ValVarDcl) |
       TraitDef | ClsDef | ObjDef
     )
     val TmplStat = R( Import | Prelude ~ DefDcl | StatCtx.Expr )
@@ -30,12 +30,12 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
   val ValDef = R( Pat2.rep1(",") ~ (`:` ~ Type).? ~ `=` ~ StatCtx.Expr )
   val VarDef = R( Ids ~ `:` ~ Type ~ `=` ~ `_` | ValDef )
 
-  val DefDef = {
+  val FunDef = {
     val Body = R( `=` ~ `macro`.? ~ StatCtx.Expr | OneNLMax ~ "{" ~ Block ~ "}" )
-    R( FunSig ~ (`:` ~ Type).? ~ Body )
+    R( (`:` ~ Type).? ~ Body )
   }
 
-  val BlockDef: R0 = R( `def` ~ DefDef | `type` ~ TypeDef | `val` ~ ValDef | `var` ~ VarDef | TraitDef | ClsDef | ObjDef )
+  val BlockDef: R0 = R( `def` ~ FunSig ~ FunDef | `type` ~ TypeDef | `val` ~ ValDef | `var` ~ VarDef | TraitDef | ClsDef | ObjDef )
 
   val ClsDef = {
     val ClsAnnot = R( `@` ~ SimpleType ~ ArgList )

@@ -5,7 +5,7 @@ trait Types extends Core{
   def TypeExpr: R0
   def ValDef: R0
   def VarDef: R0
-  def DefDef: R0
+  def FunDef: R0
   private implicit def wspStr(s: String) = WL ~ s
 
   val Mod: R0 = R( LocalMod | AccessMod | `override` )
@@ -15,11 +15,11 @@ trait Types extends Core{
     R( (`private` | `protected`) ~ AccessQualifier.? )
   }
 
-  val ValDcl = R( Ids ~ `:` ~ Type )
-  val VarDcl = R( Ids ~ `:` ~ Type )
-  val FunDcl = R( FunSig ~ (`:` ~ Type).? )
+  
+  val ValVarDcl = R( Ids ~ `:` ~ Type )
+  val FunDcl = R( (`:` ~ Type).? )
   val Dcl: R0 = {
-    R( (`val` ~ ValDcl) | (`var` ~ VarDcl) | (`def` ~ FunDcl) | (`type` ~ TypeDcl) )
+    R( (`val` | `var`) ~! ValVarDcl | (`def` ~! FunSig ~ FunDcl) | (`type` ~! TypeDcl) )
   }
 
   val Type: R0 = {
@@ -34,7 +34,7 @@ trait Types extends Core{
   val InfixType = R( CompoundType ~ (NotNewline ~ Id ~ OneNLMax ~ CompoundType).rep )
 
   val CompoundType = {
-    val RefineStat = R( (`type` ~ TypeDef) | Dcl  )
+    val RefineStat = R( (`type` ~! TypeDef) | Dcl  )
     val Refinement = R( OneNLMax ~ `{` ~ RefineStat.rep(Semis) ~ `}` )
     R( AnnotType.rep1(`with`) ~ Refinement.? | Refinement )
   }
@@ -45,24 +45,24 @@ trait Types extends Core{
     R( BasicType ~ (TypeArgs | `#` ~ Id).rep )
   }
 
-  val TypeArgs = R( "[" ~ Types ~ "]" )
+  val TypeArgs = R( "[" ~! Types ~ "]" )
   val Types = R( Type.rep1(",") )
 
   val TypeDcl: R0 = R( Id ~ TypeArgList.? ~ TypeBounds )
 
   val FunSig: R0 = {
-    val FunArg = R( Annot.rep ~ Id ~ (`:` ~ ParamType).? ~ (`=` ~ TypeExpr).? )
+    val FunArg = R( Annot.rep ~ Id ~! (`:` ~! ParamType).? ~ (`=` ~! TypeExpr).? )
     val Args = R( FunArg.rep1(",") )
     val FunArgs = R( OneNLMax ~ "(" ~ Args.? ~ ")" )
     val FunAllArgs = R( FunArgs.rep ~ (OneNLMax ~ "(" ~ `implicit` ~ Args ~ ")").? )
-    val FunTypeArgs = R( "[" ~ (Annot.rep ~ TypeArg).rep1(",") ~ "]" )
+    val FunTypeArgs = R( "[" ~! (Annot.rep ~ TypeArg).rep1(",") ~ "]" )
     R( (Id | `this`) ~ FunTypeArgs.? ~ FunAllArgs )
   }
-  val ParamType = R( `=>` ~ Type | Type ~ "*" | Type )
+  val ParamType = R( `=>` ~! Type | Type ~ "*".? )
 
-  val TypeBounds: R0 = R( (`>:` ~ Type).? ~ (`<:` ~ Type).? )
+  val TypeBounds: R0 = R( (`>:` ~! Type).? ~ (`<:` ~! Type).? )
   val TypeArg: R0 = {
-    val CtxBounds = R((`<%` ~ Type).rep ~ (`:` ~ Type).rep)
+    val CtxBounds = R((`<%` ~! Type).rep ~ (`:` ~! Type).rep)
     R((Id | `_`) ~ TypeArgList.? ~ TypeBounds ~ CtxBounds)
   }
 
