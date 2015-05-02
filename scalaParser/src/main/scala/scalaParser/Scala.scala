@@ -21,6 +21,7 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
       TraitDef | ClsDef | ObjDef
     )
     val TmplStat = R( Import | Prelude ~ DefDcl | StatCtx.Expr )
+
     val SelfType = R( (`this` | Id | `_`) ~ (`:` ~ InfixType).? ~ `=>` )
     R( "{" ~ SelfType.? ~ Semis.? ~ TmplStat.rep(Semis) ~ `}` )
   }
@@ -34,13 +35,13 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
   val FunDef = R( FunDcl ~ FunBody )
 
 
-  val BlockDef: R0 = R( `def` ~ FunSig ~ FunDef | `type` ~ TypeDef | `val` ~ ValDef | `var` ~ VarDef | TraitDef | ClsDef | ObjDef )
+  val BlockDef: R0 = R( `def` ~! FunSig ~ FunDef | `type` ~! TypeDef | `val` ~! ValDef | `var` ~! VarDef | TraitDef | ClsDef | ObjDef )
 
   val ClsDef = {
     val ClsAnnot = R( `@` ~! SimpleType ~ ArgList )
     val Prelude = R( NotNewline ~ ( ClsAnnot.rep1 ~ AccessMod.? | ClsAnnot.rep ~ AccessMod) )
     val ClsArgMod = R( (Mod.rep ~ (`val` | `var`)).? )
-    val ClsArg = R( Annot.rep ~ ClsArgMod ~ Id ~! `:` ~ ParamType ~ (`=` ~ ExprCtx.Expr).? )
+    val ClsArg = R( Annot.rep ~ ClsArgMod ~ Id ~! `:` ~ ParamType ~ (`=` ~! ExprCtx.Expr).? )
 
     val Implicit = R( OneNLMax ~ "(" ~ `implicit` ~ ClsArg.rep1(",") ~ ")" )
     val ClsArgs = R( OneNLMax ~ "(" ~ ClsArg.rep(",") ~ ")" )
@@ -51,7 +52,7 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
     val TraitTmplOpt = {
       val TraitParents = R( AnnotType ~ (`with` ~ AnnotType).rep )
       val TraitTmpl = R( EarlyDefs.? ~ TraitParents ~ TmplBody.? )
-      R( `extends` ~ TraitTmpl | `extends`.? ~ TmplBody )
+      R( TmplBody | `extends` ~! (TraitTmpl | TmplBody) )
     }
     R( `trait` ~! Id ~ TypeArgList.? ~ TraitTmplOpt.? )
   }
@@ -61,12 +62,12 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
 
   val ClsTmpl: R0 = {
     val Constr = R( AnnotType ~ (NotNewline ~ ArgList).rep )
-    val ClsParents = R( Constr ~ (`with` ~ AnnotType).rep )
+    val ClsParents = R( Constr ~ (`with` ~! AnnotType).rep )
     R( EarlyDefs.? ~ ClsParents ~ TmplBody.? )
   }
 
   val EarlyDefs: R0 = {
-    val EarlyDef = R( (Annot ~ OneNLMax).rep ~ Mod.rep ~ ((`val` ~ ValDef) | (`var` ~ VarDef)) )
+    val EarlyDef = R( (Annot ~ OneNLMax).rep ~ Mod.rep ~ ((`val` ~! ValDef) | (`var` ~! VarDef)) )
     R( `{` ~ EarlyDef.rep(Semis) ~ `}` ~ `with` )
   }
 
@@ -74,12 +75,12 @@ object Scala extends Core with Types with Exprs/* with Xml*/{
   val PkgBlock = R( QualId ~! `{` ~ TopStatSeq.? ~ `}` )
   val TopStatSeq: R0 = {
     val Tmpl = R( (Annot ~ OneNLMax).rep ~ Mod.rep ~ (TraitDef | ClsDef | ObjDef) )
-    val TopStat = R( `package` ~ (PkgBlock | PkgObj) | Import | Tmpl )
-    R( TopStat.rep1(Semis) )
+    val TopStat = R( `package` ~! (PkgBlock | PkgObj) | Import | Tmpl )
+    R( TopStat.rep(Semis) )
   }
-  val TopPkgSeq = R( (`package` ~ QualId ~ !(WS ~ "{")).rep1(Semis) )
+  val TopPkgSeq = R( (`package` ~ QualId ~ !(WS ~ "{")).rep(Semis) )
   val CompilationUnit: R0 = {
-    val Body = R( TopPkgSeq ~ (Semis ~ TopStatSeq).? | TopStatSeq )
-    R( Semis.? ~ Body.? ~ Semis.? ~ WL ~ Parser.End)
+    val Body = R( TopPkgSeq ~ Semis.? ~ TopStatSeq )
+    R( Semis.? ~ Body ~ Semis.? ~ WL ~ Parser.End)
   }
 }

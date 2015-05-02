@@ -1,24 +1,20 @@
 package scalaParser
 
-
 import parsing._
 import utest._
 
-import scala.util.{Failure, Success}
-
-object UnitTests extends TestSuite{
-  def checkNeg[T](input: String) = {
+object FailureTests extends TestSuite{
+  def checkNeg[T](input: String, msg: String) = {
     println("Checking...\n" )
     Scala.CompilationUnit.parse(input) match{
-      case _: Result.Failure => () // yay
-      case Result.Success(parsed, index, cut) => assert(index != input.length)
+      case f: Result.Failure => assert(f.trace == msg.trim) // yay
+      case Result.Success(parsed, index, cut) => assert(false)
     }
   }
 
 
   def check[T](input: String, tag: String = "") = {
     println("Checking...\n" )
-    import Scala._
     val res = Scala.CompilationUnit.parse(input)
     res match{
       case f: Result.Failure =>
@@ -39,45 +35,43 @@ object UnitTests extends TestSuite{
       // parboiled2: 446 443 447
       // parsing: 104 123 122
       // Parboiled2 is 3.9 times faster
-      val input = scala.io.Source.fromFile(
-        "scala-js/compiler/src/main/scala/org/scalajs/core/compiler/GenJSCode.scala"
-      ).mkString
-      println("Loaded " + input.length + " bytes of input. Parsing...")
-      val start = System.currentTimeMillis()
-      var count = 0
-      while(System.currentTimeMillis() - start < 30000){
-        Scala.CompilationUnit.parse(input, trace = false)
-        count += 1
-      }
-      count
+//      val input = scala.io.Source.fromFile(
+//        "scala-js/compiler/src/main/scala/org/scalajs/core/compiler/GenJSCode.scala"
+//      ).mkString
+//      println("Loaded " + input.length + " bytes of input. Parsing...")
+//      val start = System.currentTimeMillis()
+//      var count = 0
+//      while(System.currentTimeMillis() - start < 3000000){
+//        EitherSequenceWalker.recurse(RuleWalker.recurse(Scala.CompilationUnit, Nil), Nil).parse(input, trace = false)
+//        count += 1
+//      }
+//      count
     }
     'pos {
-      * - check("package torimatomeru")
-      * - check(
-        """package torimatomeru
-          |
-          |package lols
-        """.stripMargin
-      )
-      * - check(
-        """package torimatomeru
-          |import a
-          |import b
-        """.stripMargin
-      )
-      * - check(
+//      * - checkNeg("package package")
+//      * - check(
+//        """package torimatomeru
+//          |
+//          |package lols
+//        """.stripMargin
+//      )
+//      * - checkNeg(
+//        """package torimatomeru
+//          |import import
+//          |import b
+//        """.stripMargin
+//      )
+      * - checkNeg(
         """
-          |package torimatomeru
-          |
-          |import org.parboiled2.ParseError
-          |import utest._
-          |import utest.framework.Test
-          |import utest.util.Tree
-          |
-          |import scala.util.{Failure, Success}
-          |
-          |object SyntaxTest extends TestSuite
-        """.stripMargin
+          |bject SyntaxTest extends Foo
+        """.stripMargin,
+        """ CompilationUnit:0 / End:1 ..."bject Synt" """
+      )
+      * - checkNeg(
+        """
+          |object SyntaxTest exten
+        """.stripMargin,
+        """ CompilationUnit:0 / End:19 ..."exten\n    " """
       )
       * - check(
         """
@@ -981,50 +975,6 @@ object UnitTests extends TestSuite{
         """object X{
           |  type x = {def t: Int = 1}
           |}
-        """.stripMargin
-      )
-
-    }
-    'neg{
-      * - checkNeg(
-        """
-          |object O{
-          |  for{
-          |    x <- Nil map
-          |
-          |  (x => x)
-          |  } yield x
-          |}
-        """.stripMargin
-      )
-      * - checkNeg(
-        """object O{
-          |  for{
-          |    x <- Nil
-          |    if 1 ==
-          |
-          |    2
-          |  } yield x
-          |}
-        """.stripMargin
-      )
-      * - checkNeg(
-        """object O{
-          |  for{
-          |    x <- Nil
-          |    _ = 1 ==
-          |
-          |    2
-          |  } yield x
-          |}
-        """.stripMargin
-      )
-      * - checkNeg(
-        """
-          |object System {
-          |  def a[@b T[V @b]] = 1
-          |}
-          |
         """.stripMargin
       )
 
