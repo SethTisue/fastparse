@@ -49,7 +49,7 @@ trait Literals { l =>
       val Literal = P( ("-".? ~ (Float | Int)) | Bool | String | "'" ~! (Char | Symbol) | Null )
       val Interp = interp match{
         case None => Fail
-        case Some(p) => "$" ~ Identifiers.PlainIdNoDollar | ("${" ~ p ~ WL ~ "}") | "$$"
+        case Some(p) => P( "$" ~ Identifiers.PlainIdNoDollar | ("${" ~ p ~ WL ~ "}") | "$$" )
       }
 
 

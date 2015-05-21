@@ -50,10 +50,14 @@ object Combinators {
   case class Rule[+T](name: FuncName, p: () => Parser[T]) extends Parser[T]{
     lazy val pCached = p()
     def parseRec(cfg: ParseCtx, index: Int) = {
-      pCached.parseRec(cfg, index) match{
+
+      lazy val res  = pCached.parseRec(cfg, index) match{
         case f: Failure.Mutable => failMore(f, index, cfg.trace)
-        case s => s
+        case s: Result.Success[T] => s
       }
+      if (cfg.instrumenter == null) res
+      else cfg.instrumenter(this, index, () => res)
+      res
     }
     override def toString = name.name
     override def shortTraced = true

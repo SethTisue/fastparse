@@ -93,14 +93,24 @@ trait Core extends syntax.Literals{
 
   // kinda-sorta keywords that are common patterns even if not
   // really-truly keywords
-  val `_*` = P( `_` ~ "*" )
-  val `}` = P( Semis.? ~ "}" )
-  val `{` = P( "{" ~ Semis.? )
-  /**
-   * helper printing function
-   */
-
+  val `_*` = P( `_` ~ "*" )("`_*`")
+  val `}` = P( Semis.? ~ "}" )("`}`")
+  val `{` = P( "{" ~ Semis.? )("`{`")
+  val `)` = P( ")" )("`)`")
+  val `(` = P( "(" )("`(`")
+  val `[` = P( "[" )("`[`")
+  val `]` = P( "]" )("`]`")
+  val `.` = P( "." )("`.`")
+  val `,` = P( "," )("`,`")
   val Id = P( WL ~ Identifiers.Id )
+  val `*` = P( "*" )("`*`")
+  val `|` = P( "|" )("`|`")
+  /**
+   * Same as Id, but semantically used in places where the identifier
+   * is bound rather than referenced, which is useful for syntax highlighting
+   */
+  val IdBinding = P( WL ~ Identifiers.Id )
+
   val VarId = P( WL ~ Identifiers.VarId )
   val ExprLiteral = P( WL ~ Literals.Expr.Literal )
   val PatLiteral = P( WL ~ Literals.Pat.Literal )
@@ -108,8 +118,8 @@ trait Core extends syntax.Literals{
   val Semis = P( Semi.rep(1) )
   val Newline = P( WL ~ Basic.Newline )
 
-  val QualId = P( WL ~ Id.rep(1, sep = ".") )
-  val Ids = P( Id.rep(1, sep = ",") )
+  val QualId = P( WL ~ Id.rep(1, sep = `.`) )
+  val Ids = P( Id.rep(1, sep = `,`) )
 
   val NotNewline: P0 = P( &( WS ~ !Basic.Newline ) )
   val OneNLMax: P0 = {
@@ -120,12 +130,12 @@ trait Core extends syntax.Literals{
    * Sketchy way to whitelist a few suffixes that come after a . select;
    * apart from these and IDs, everything else is illegal
    */
-  val PostDotCheck = P( WL ~ !(`super` | `this` | "{" | `_` | `type`) )
+  val PostDotCheck = P( WL ~ !(`super` | `this` | `{` | `_` | `type`) )
   val StableId: P0 = {
-    val ClassQualifier = P( "[" ~ Id ~ "]" )
+    val ClassQualifier = P( `[` ~ Id ~ `]` )
     val ThisSuper = P( `this` | `super` ~ ClassQualifier.? )
-    val ThisPath = P( ThisSuper ~ ("." ~ PostDotCheck ~! Id).rep )
-    val IdPath = P( Id ~ ("." ~ PostDotCheck ~! Id).rep ~ ("." ~ ThisPath).? )
+    val ThisPath = P( ThisSuper ~ (`.` ~ PostDotCheck ~! Id).rep )
+    val IdPath = P( Id ~ (`.` ~ PostDotCheck ~! Id).rep ~ (`.` ~ ThisPath).? )
     P( ThisPath | IdPath )
   }
 }

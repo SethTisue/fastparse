@@ -9,20 +9,17 @@ import fastparse._
  */
 object Scala extends Core with Types with Exprs with Xml{
 
-  private implicit def wspStr(s: String) = P(WL ~ s)(Utils.literalize(s).toString)
-
-
   val TmplBody: P0 = {
     val Prelude = P( (Annot ~ OneNLMax).rep ~ (Mod ~! Pass).rep )
     val TmplStat = P( Import | Prelude ~ BlockDef | StatCtx.Expr )
-    val SelfType = P( (`this` | Id | `_`) ~ (`:` ~ InfixType).? ~ `=>` )
-    P( "{" ~! SelfType.? ~ Semis.? ~ TmplStat.rep(sep = Semis) ~ `}` )
+    val SelfType = P( (`this` | IdBinding | `_`) ~ (`:` ~ InfixType).? ~ `=>` )
+    P( `{` ~! SelfType.? ~ Semis.? ~ TmplStat.rep(sep = Semis) ~ `}` )
   }
 
-  val ValVarDef = P( BindPattern.rep(1, "," ~!) ~ (`:` ~! Type).? ~ (`=` ~! StatCtx.Expr).? )
+  val ValVarDef = P( BindPattern.rep(1, `,` ~!) ~ (`:` ~! Type).? ~ (`=` ~! StatCtx.Expr).? )
 
   val FunDef = {
-    val Body = P( `=` ~! `macro`.? ~ StatCtx.Expr | OneNLMax ~ "{" ~ Block ~ "}" )
+    val Body = P( `=` ~! `macro`.? ~ StatCtx.Expr | OneNLMax ~ `{` ~ Block ~ `}` )
     P( FunSig ~ (`:` ~! Type).? ~ Body.? )
   }
 
@@ -31,13 +28,13 @@ object Scala extends Core with Types with Exprs with Xml{
   val ClsDef = {
     val ClsAnnot = P( `@` ~ SimpleType ~ ArgList )
     val Prelude = P( NotNewline ~ ( ClsAnnot.rep(1) ~ AccessMod.? | ClsAnnot.rep ~ AccessMod) )
-    val ClsArgMod = P( (Mod.rep ~ (`val` | `var`)) )
+    val ClsArgMod = P( Mod.rep ~ (`val` | `var`) )
     val ClsArg = P( Annot.rep ~ ClsArgMod.? ~ Id ~ `:` ~ Type ~ (`=` ~ ExprCtx.Expr).? )
 
 
-    val ClsArgs = P( OneNLMax ~ "(" ~! `implicit`.? ~ ClsArg.rep(sep = ",", end = ")") )
+    val ClsArgs = P( OneNLMax ~ `(` ~! `implicit`.? ~ ClsArg.rep(sep = `,`, end = `)`) )
     val AllArgs = P( ClsArgs.rep)
-    P( `case`.? ~ `class` ~! Id ~ TypeArgList.? ~ Prelude.? ~ AllArgs ~ DefTmpl.? )
+    P( `case`.? ~ `class` ~! IdBinding ~ TypeArgList.? ~ Prelude.? ~ AllArgs ~ DefTmpl.? )
   }
 
   val Constrs = P( Constr.rep(1, `with` ~!) )
@@ -47,9 +44,9 @@ object Scala extends Core with Types with Exprs with Xml{
   val DefTmpl = P( (`extends` | `<:`) ~ AnonTmpl | TmplBody)
   val AnonTmpl = P( EarlyDefTmpl | NamedTmpl | TmplBody )
 
-  val TraitDef = P( `trait` ~! Id ~ TypeArgList.? ~ DefTmpl.? )
+  val TraitDef = P( `trait` ~! IdBinding ~ TypeArgList.? ~ DefTmpl.? )
 
-  val ObjDef: P0 = P( `case`.? ~ `object` ~! Id ~ DefTmpl.? )
+  val ObjDef: P0 = P( `case`.? ~ `object` ~! IdBinding ~ DefTmpl.? )
 
   val Constr = P( AnnotType ~ (NotNewline ~ ParenArgList ).rep )
 
@@ -60,7 +57,7 @@ object Scala extends Core with Types with Exprs with Xml{
     val TopStat = P( `package` ~! (PkgBlock | PkgObj) | Import | Tmpl )
     P( TopStat.rep(1, Semis) )
   }
-  val TopPkgSeq = P( (`package` ~ QualId ~ !(WS ~ "{")).rep(1, Semis) )
+  val TopPkgSeq = P( (`package` ~ QualId ~ !(WS ~ `{`)).rep(1, Semis) )
   val CompilationUnit: P0 = {
     val Body = P( TopPkgSeq ~ (Semis ~ TopStatSeq).? | TopStatSeq )
     P( Semis.? ~ Body.? ~ Semis.? ~ WL ~ End)

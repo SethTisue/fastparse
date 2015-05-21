@@ -125,7 +125,7 @@ import fastparse.core.Result._
  * @param logDepth
  * @param trace
  */
-case class ParseCtx(input: String, logDepth: Int, trace: Boolean){
+case class ParseCtx(input: String, logDepth: Int, trace: Boolean, instrumenter: (Parser[_], Int, () => Result[_]) => Unit){
   val failure = Failure.Mutable(input, Nil, 0, null, false)
   val success = Success.Mutable(null, 0, false)
 }
@@ -164,8 +164,8 @@ trait Parser[+T] extends ParserApi[T]{
    *              `trace`, you get every parser all the way to the top, though
    *              this comes with a ~20-40% slowdown.
    */
-  def parse(input: String, index: Int = 0, trace: Boolean = true): Result[T] = {
-    parseRec(ParseCtx(input, 0, trace), index)
+  def parse(input: String, index: Int = 0, trace: Boolean = true, instrumenter: (Parser[_], Int, () => Result[_]) => Unit = null): Result[T] = {
+    parseRec(ParseCtx(input, 0, trace, instrumenter), index)
   }
 
   /**

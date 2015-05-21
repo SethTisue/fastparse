@@ -41,7 +41,7 @@ object FailureTests extends TestSuite{
     )
     * - checkNeg(
       "import scala.util.{Failure, Success + 1}",
-      expected = """ "}" """,
+      expected = """"}"""",
       found = "+ 1}"
     )
     * - checkNeg(
@@ -52,7 +52,7 @@ object FailureTests extends TestSuite{
         |  }
         |}
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = "](input: S"
     )
     * - checkNeg(
@@ -73,7 +73,7 @@ object FailureTests extends TestSuite{
         |  }
         |}
       """.stripMargin,
-      expected = """("}" | `case`)""",
+      expected = """(`}` | `case`)""",
       found ="   1"
     )
     * - checkNeg(
@@ -104,7 +104,7 @@ object FailureTests extends TestSuite{
         | filename.asInstanceOf 10
         |}
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = "10"
     )
     * - checkNeg(
@@ -199,7 +199,7 @@ object FailureTests extends TestSuite{
         |}
         |
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = ")"
     )
     * - checkNeg(
@@ -227,7 +227,7 @@ object FailureTests extends TestSuite{
         |  d = 1
         |
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = ""
     )
     //    Not sure how to properly put cuts on comments nodes
@@ -284,7 +284,7 @@ object FailureTests extends TestSuite{
         |    val c = f
         |}
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = "d // g"
     )
     * - checkNeg(
@@ -295,7 +295,7 @@ object FailureTests extends TestSuite{
         |  }
         |}
       """.stripMargin,
-      expected = """("," ~ Pattern | ")")""",
+      expected = """(`,` ~ Pattern | `)`)""",
       found = " => z"
     )
     * - checkNeg(
@@ -325,7 +325,7 @@ object FailureTests extends TestSuite{
         |  a =:= .c
         |}
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = ".c"
     )
     * - checkNeg(
@@ -336,7 +336,7 @@ object FailureTests extends TestSuite{
         |  )
         |}
       """.stripMargin,
-      expected = "(_* | AscriptionType | Annot.rep(1))",
+      expected = "(`_*` | AscriptionType | Annot.rep(1))",
       found = "\n  )\n}"
     )
     * - checkNeg(
@@ -345,7 +345,7 @@ object FailureTests extends TestSuite{
         |  a[)
         |}
       """.stripMargin,
-      expected = """(Type | "]")""",
+      expected = """(Type | `]`)""",
       found = ")"
     )
     * - checkNeg(
@@ -354,7 +354,7 @@ object FailureTests extends TestSuite{
         |  a[b)
         |}
       """.stripMargin,
-      expected = """("," ~ Type | "]")""",
+      expected = """(`,` ~ Type | `]`)""",
       found = ")"
     )
     * - checkNeg(
@@ -365,8 +365,8 @@ object FailureTests extends TestSuite{
         |  }
         |}
       """.stripMargin,
-      expected = """(CaseClause | "}")""",
-      found = "\n    stats"
+      expected = """(CaseClause | `}`)""",
+      found = "    stats"
     )
 
     * - checkNeg(
@@ -433,7 +433,7 @@ object FailureTests extends TestSuite{
         |  a!.b
         |}
       """.stripMargin,
-      expected = """ "}" """,
+      expected = """"}"""",
       found = ".b"
     )
     * - checkNeg(
@@ -443,7 +443,7 @@ object FailureTests extends TestSuite{
         |}
         |
       """.stripMargin,
-      expected = """(Expr | ")")""",
+      expected = """(Expr | `)`)""",
       found = " => }"
     )
     * - checkNeg(
@@ -451,7 +451,7 @@ object FailureTests extends TestSuite{
         |class Parser([
         |
       """.stripMargin,
-      expected = """(ClsArg | ")")""",
+      expected = """(ClsArg | `)`)""",
       found = "["
     )
     * - checkNeg(
@@ -468,7 +468,7 @@ object FailureTests extends TestSuite{
         |package omg
         |;
       """.stripMargin,
-      expected = """ "{" """,
+      expected = """"{"""",
       found = ";"
     )
 
@@ -479,7 +479,7 @@ object FailureTests extends TestSuite{
         |  code: @ 12
         |}
       """.stripMargin,
-      expected = """("(" ~ Type.rep(sep = ",", end = ")") | StableId ~ ("." ~ `type`).?)""",
+      expected = """(`(` ~ Type.rep(sep = `,`, end = `)`) | StableId ~ (`.` ~ `type`).?)""",
       found = " 12"
     )
 
@@ -488,7 +488,7 @@ object FailureTests extends TestSuite{
         |  { a: L = }
         |}
       """.stripMargin,
-      expected = """ ("}" | `case`) """,
+      expected = """ (`}` | `case`) """,
       found = " = }"
     )
     * - checkNeg(
@@ -554,7 +554,7 @@ object FailureTests extends TestSuite{
           |  } yield x
           |}
         """.stripMargin,
-        expected = """("," ~ Pattern | ")")""",
+        expected = """(`,` ~ Pattern | `)`)""",
         found = " => x)"
       )
     * - checkNeg(
@@ -578,7 +578,7 @@ object FailureTests extends TestSuite{
         |  } yield x
         |}
       """.stripMargin,
-      expected = """(Enumerator | WL ~ "}")""",
+      expected = """(Enumerator | WL ~ `}`)""",
       found = "\n    {"
     )
       * - checkNeg(
@@ -720,7 +720,7 @@ object FailureTests extends TestSuite{
       s"""
          |import x.{y=>}
         """.stripMargin,
-      expected = "(Id | `_`)",
+      expected = "(IdBinding | `_`)",
       found = "}"
     )
     * - checkNeg(
@@ -728,13 +728,13 @@ object FailureTests extends TestSuite{
          |import x.y,
         """.stripMargin,
       expected = "(ThisPath | IdPath)",
-      found = "\n"
+      found = ""
     )
     * - checkNeg(
       s"""
          |object X{type T = A with}
         """.stripMargin,
-      expected = """("(" ~ Type.rep(sep = ",", end = ")") | StableId ~ ("." ~ `type`).?)""",
+      expected = """(`(` ~ Type.rep(sep = `,`, end = `)`) | StableId ~ (`.` ~ `type`).?)""",
       found = "}"
     )
     * - checkNeg(
@@ -769,7 +769,7 @@ object FailureTests extends TestSuite{
       s"""
          |object X{def f[T, B,] = 1}
         """.stripMargin,
-      expected = """(Id | `_`)""",
+      expected = """(IdBinding | `_`)""",
       found = "]"
     )
     * - checkNeg(
@@ -805,7 +805,7 @@ object FailureTests extends TestSuite{
       s"""
          |object X{type T[,] = A }
         """.stripMargin,
-      expected = """(Id | `_`)""",
+      expected = """(IdBinding | `_`)""",
       found = ",]"
     )
     * - checkNeg(
@@ -842,7 +842,7 @@ object FailureTests extends TestSuite{
           |}
           |
         """.stripMargin,
-        expected = """(Id | `_`)""",
+        expected = """(IdBinding | `_`)""",
         found = "["
       )
 

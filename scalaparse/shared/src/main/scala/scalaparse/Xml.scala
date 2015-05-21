@@ -10,7 +10,6 @@ trait Xml extends Core {
   def Patterns: P0
   val XmlExpr = P( WL ~ Xml.XmlContent ~ (WL ~ Xml.Element).rep )
   val XmlPattern = P( WL ~ Xml.ElemPattern )
-
   private[this] object Xml{
     val BaseChar = P(CharIn(
       '\u0041' to '\u005A', '\u0061' to '\u007A', '\u00C0' to '\u00D6', '\u00D8' to '\u00F6',
