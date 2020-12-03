@@ -11,7 +11,7 @@ sbt ++2.12.8 \
     utilsJVM/publishSigned \
     fastparseJS/publishSigned \
     fastparseJVM/publishSigned
-sbt ++2.13.0-RC1 \
+sbt ++2.13.4 \
     utilsJS/publishSigned \
     utilsJVM/publishSigned \
     fastparseJS/publishSigned \
